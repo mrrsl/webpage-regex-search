@@ -26,7 +26,9 @@ export const MessageType = {
 export const MessageTypeInverse = InvertEnumKeyValue(MessageType);
 
 function InvertEnumKeyValue(obj) {
+
     let o = {};
+    
     for (let key of Object.keys(obj)) {
         o[obj[key]] = key;
     }
@@ -35,7 +37,10 @@ function InvertEnumKeyValue(obj) {
 
 export class Message {
     constructor(msgtype, params) {
-        if (!MessageTypeInverse.hasOwnProperty(msgtype)) throw new Error('Invalid message type');
+
+        if (!MessageTypeInverse.hasOwnProperty(msgtype))
+            throw new Error('Invalid message type');
+
         this.command = msgtype;
         this.params = params;
     }

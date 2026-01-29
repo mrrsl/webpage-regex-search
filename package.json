@@ -1,25 +1,23 @@
 {
-  "name": "re-search-extension",
+  "name": "research-extension",
   "version": "1.0.0",
-  "description": "Regex find functionality in a browser extension",
-  "private": true,
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack && node ./copy.js",
-    "watch": "webpack --watch"
+  "description": "",
+  "homepage": "https://github.com/mrrsl/webpage-regex-search#readme",
+  "bugs": {
+    "url": "https://github.com/mrrsl/webpage-regex-search/issues"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrrsl/webpage-regex-search.git"
+  },
   "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "copy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
-    "bulma": "^0.9.4",
-    "svelte": "^4.2.0"
-  },
-  "devDependencies": {
-    "@tsconfig/svelte": "^5.0.0",
-    "html-webpack-plugin": "^5.5.3",
-    "svelte-loader": "^3.1.9",
-    "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4"
-  },
-  "type": "module"
+    "vite": "^7.3.1"
+  }
 }

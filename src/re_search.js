@@ -1,5 +1,12 @@
-import { Message, MessageType } from './message_protocol.js'
-import { DefaultHighlightOptions, HighlightReplacement } from './highlight_replacement.js';
+import {
+    Message,
+    MessageType
+} from './message_protocol.js'
+
+import {
+    DefaultHighlightOptions,
+    HighlightReplacement
+} from './highlight_replacement.js';
 
 (() => {
 
@@ -18,6 +25,7 @@ window.hasRun = true;
 
 /**
  * Retrieve an array containing all Text {@link Node}s within the given element including its children.
+ * 
  * @param parentNode
  */
 function AggregateTextNodes(parentNode) {
@@ -43,14 +51,21 @@ function AggregateTextNodes(parentNode) {
     return list;
 }
 /**
- * Returns a simple object with the same property names as a default object. If a given object shares a property name, use the given object's property value instead. Note this function does not expected nested objects in either parameter.
+ * Returns a simple object with the same property names as a default object. If a given object shares a property name,
+ * use the given object's property value instead. Note this function does not expected nested objects in either parameter.
+ * 
  * @param {object} defaultOptions An options object. The returned object will have indentical property names to this object.
  * @param {object} givenOptions An options object. Any property name shared with defaultOptions will use this object's value in the returned object.
- * @returns 
+ * 
+ * @returns {object} Guarunteed valid set of configuration options.
  */
 function SafeConfigParse(defaultOptions, givenOptions) {
-    if (!givenOptions) return structuredClone(defaultOptions);
+
+    if (!givenOptions)
+        return structuredClone(defaultOptions);
+
     let finalSettings = {};
+
     for (let setting of Object.keys(defaultOptions)) {
         if (givenOptions.hasOwnProperty(setting)) {
             finalSettings[setting] = givenOptions[setting];
@@ -60,7 +75,6 @@ function SafeConfigParse(defaultOptions, givenOptions) {
     }
     return finalSettings;
 }
-
 
 /**
  * This class should be the container for state information.
@@ -110,32 +124,44 @@ class Searcher {
      * @param {string} searchstr 
      */
     Search(searchstr, multiFlag = true, caseFlag = false) {
-        debugger;
-        if (this.ReplacedText.length > 1) this.Revert();
-        if (searchstr.length === 0) return;
+        
+        if (this.ReplacedText.length > 1)
+            this.Revert();
+        if (searchstr.length === 0)
+            return;
 
         let flags = "g";
-        if (multiFlag) flags += "m";
-        if (caseFlag) flags += "i"
+
+        if (multiFlag)
+            flags += "m";
+        if (caseFlag)
+            flags += "i"
+
         let searchExpression = new RegExp(searchstr, flags);
 
         for (let tnode of this.TextNodes) {
+
             let matches = [...tnode.data.matchAll(searchExpression)];
             // Observed some that some text nodes have a null parentElement/parentNode
             if (matches.length > 0 && tnode.parentElement) {
+
                 let ranges = matches.map(
                     (result) => [result.index, result.index + result[0].length]
                 );
+
                 let swappedElement = new HighlightReplacement(ranges, tnode);
                 this.ReplacedText.push(swappedElement);
                 this.TrueMatchList = this.TrueMatchList.concat(swappedElement.matches);
+
                 swappedElement.Swap();
             }
         }
     }
 
     ChangeHighlightColor(options = DefaultHighlightOptions) {
+
         this.Colors = SafeConfigParse(DefaultHighlightOptions, options);
+
         for (let matchedElement of this.ReplacedText) {
             matchedElement.ChangeColor(this.Colors);
         }
@@ -164,7 +190,9 @@ class Searcher {
      * @returns Returns null if index is invalid, otherwise returns a string.
      */
     GetMatchInfo(index) {
-        if (index >= this.TrueMatchList.length || index < 0) return null;
+        if (index >= this.TrueMatchList.length || index < 0)
+            return null;
+
         this.SetCurrentMatch(index);
         return this.TrueMatchList[index].textContent;
     }
@@ -174,7 +202,9 @@ class Searcher {
      * @returns {void}
      */
     SetCurrentMatch(index) {
-        if (index >= this.TrueMatchList.length || index < 0) return;
+        if (index >= this.TrueMatchList.length || index < 0)
+            return;
+
         this.CurrentMatch = this.TrueMatchList[index];
         this.CurrentMatch.style.color = this.CurrentMatchColors.color;
         this.CurrentMatch.style.backgroundColor = this.CurrentMatchColors.backgroundColor;
@@ -185,7 +215,9 @@ class Searcher {
      * @returns {void}
      */
     ClearCurrentMatch(index) {
-        if (index >= this.TrueMatchList.length || index < 0 || this.CurrentMatch == null) return;
+        if (index >= this.TrueMatchList.length || index < 0 || this.CurrentMatch == null)
+            return;
+
         this.CurrentMatch.style.color = this.Colors.color;
         this.CurrentMatch.style.backgroundColor = this.Colors.backgroundColor;
         this.CurrentMatch = null;
@@ -199,9 +231,11 @@ let searchInstance = new Searcher(document.body);
  * @param message 
  */
 function SearchEventHandler(message) {
-    debugger;
-    if (!message) return;
+    if (!message)
+        return;
+
     switch(message.command) {
+
         case MessageType.SEARCH:
             searchInstance.Revert();
             searchInstance.Search(message.params[0]);
@@ -214,15 +248,19 @@ function SearchEventHandler(message) {
                 browser.runtime.sendMessage(sentMaxMessage);
             }
             break;
+
         case MessageType.CHANGE_COLOR:
             searchInstance.ChangeHighlightColor(SafeConfigParse(DefaultHighlightOptions, message.params[0]));
             break;
+
         case MessageType.CLEAR:
             searchInstance.Revert();
             break;
+
         case MessageType.JUMP_TO:
             searchInstance.JumpTo(message.params[0]);
             break;
+
         case MessageType.GET_NUM:
             let match = searchInstance.GetMatchInfo(message.params[0]);
             if (match) {
@@ -230,13 +268,14 @@ function SearchEventHandler(message) {
                 searchInstance.SetCurrentMatch(message.params[0]);
             }
             break;
+
         case MessageType.CLEAR_CURRENT:
             searchInstance.ClearCurrentMatch();
             break;
+
         default:
             break;
     }
 }
-debugger;
 browser.runtime.onMessage.addListener(SearchEventHandler);
 })();

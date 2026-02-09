@@ -19,7 +19,7 @@
     "activeTab"
   ],
 
-  "browser_action": {
+  "action": {
     "default_icon": "icon48.png",
     "default_title": "regex-search",
     "default_popup": "popup/main.html"

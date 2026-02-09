@@ -27,7 +27,7 @@ function CreateTextElement(text) {
  * two-dimensional array of index ranges.
  * 
  * @param {string} str 
- * @param {Array} segmentRanges Two-dimensional array of the form [[x, y],...]. Follows the same index semantics of {@link String.prototype.substring}.
+ * @param {Array} segmentRanges Two-dimensional array of the form [[x, y],...]. Follows the same indexing of {@link String.prototype.substring}.
  * @param {string} textColor Color string compatible with {@link CSSStyleDeclaration}.
  * @param {string} backgroundColor Color string compatible with {@link CSSStyleDeclaration}.
  * 
@@ -65,7 +65,13 @@ function SeparateString(str, segmentRanges, textColor = "", backgroundColor = ""
  * This needs to be a reversible process so our replacement will be kept as one entity and carry a reference to the Text it just replaced.
  */
 export class HighlightReplacement {
-
+    /**
+     * creates a text node replacement that adds highlight styling to matched text.
+     * 
+     * @param {Array<Array<Number>>} matchRanges Beginnning and end ranges for highlighted text sections.
+     * @param {HTMLElement} textnode 
+     * @param {*} colorOptions 
+     */
     constructor(matchRanges = [[0, 0]], textnode = null, colorOptions = DefaultHighlightOptions) {
 
         let text = (textnode)? textnode.data: "";
@@ -78,7 +84,9 @@ export class HighlightReplacement {
 
         this.matches = [];
         for (let atag of this.wrapper.children) {
-            if (atag.className == MATCH_CLASS) this.matches.push(atag);
+            if (atag.className == MATCH_CLASS){
+                this.matches.push(atag);
+            }
         }
     }
     /** Swaps the wrapper element with the Text node it originally replaced. This also reassigns all fields to null to avoid potential memory leaks. */

@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.18",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "web-ext": "^9.3.0"
   }
 }

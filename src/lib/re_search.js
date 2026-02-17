@@ -8,8 +8,6 @@ import {
     HighlightReplacement
 } from './highlight_replacement.js';
 
-(() => {
-
 const TAGNAME_EXCLUDE = {
     "SCRIPT": true,
     "STYLE": true,
@@ -24,29 +22,29 @@ if (window.hasRun) return;
 window.hasRun = true;
 
 /**
- * Retrieve an array containing all Text {@link Node}s within the given element including its children.
+ * Retrieve an array containing all {@link Text} within the given element including its children.
  * 
- * @param parentNode
+ * @param {Node} parentNode
  */
 function AggregateTextNodes(parentNode) {
+    // Final filtered Text list
     let list = [];
+    // Non-Text nodes that require further searching
     let subqueue = [];
     subqueue.push(parentNode);
 
     while (subqueue.length > 0) {
         let parent = subqueue.shift();
         // push subnodes into the queue
-        for (let child of parent.children) {
-            subqueue.push(child);
-        }
-
-        for (let node of parent.childNodes) {
-            // The contents of script elements will show up as text nodes so filter them here
-            if (node.nodeType == Node.TEXT_NODE && node.parentElement && !TAGNAME_EXCLUDE[node.parentElement.tagName]) {
+        for (let child of parent.childNodes) {
+            // Exclude script elements from the final node list
+            if (node.nodeType == Node.TEXT_NODE  && !TAGNAME_EXCLUDE[node.parentElement.tagName]) {
                 list.push(node);
             }
+            else {
+                subqueue.push(child);
+            }
         }
-
     }
     return list;
 }
@@ -79,17 +77,22 @@ function SafeConfigParse(defaultOptions, givenOptions) {
 /**
  * This class should be the container for state information.
  */
-class Searcher {
+export class Searcher {
+
     constructor(root = document.body, colorOptions = DefaultHighlightOptions, matchedColorOptions) {
+
         /** The first node to start searching from. */
         this.RootNode = root;
+
         /** List of all Text nodes present in the DOM body. */
         this.TextNodes = AggregateTextNodes(root);
+
         /** List of all {@link HighlightReplacement} created by the last search call. */
         this.ReplacedText = [];
+
         /** List of individual <a> elements that contain matched text.
          * @type Element[]
-        */
+         */
         this.TrueMatchList = [];
         this.Colors = SafeConfigParse(DefaultHighlightOptions, colorOptions);
         this.CurrentMatchColors = SafeConfigParse(DefaultCurrentMatchColor, matchedColorOptions);
@@ -104,7 +107,7 @@ class Searcher {
      */
     Update() {
         this.Revert();
-        /**@type Node[] */
+        /**@type Text[] */
         this.TextNodes = AggregateTextNodes(this.RootNode);
     }
     /**
@@ -126,7 +129,7 @@ class Searcher {
     Search(searchstr, multiFlag = true, caseFlag = false) {
         
         if (this.ReplacedText.length > 1)
-            this.Revert();
+            this.Update();
         if (searchstr.length === 0)
             return;
 
@@ -140,24 +143,30 @@ class Searcher {
         let searchExpression = new RegExp(searchstr, flags);
 
         for (let tnode of this.TextNodes) {
+            setTimeout(() => {
+                let matches = [...tnode.data.matchAll(searchExpression)];
+                // Observed some that some text nodes have a null parentElement/parentNode
+                if (matches.length > 0 && tnode.parentElement) {
 
-            let matches = [...tnode.data.matchAll(searchExpression)];
-            // Observed some that some text nodes have a null parentElement/parentNode
-            if (matches.length > 0 && tnode.parentElement) {
+                    let ranges = matches.map(
+                        (result) => [result.index, result.index + result[0].length]
+                    );
 
-                let ranges = matches.map(
-                    (result) => [result.index, result.index + result[0].length]
-                );
+                    let swappedElement = new HighlightReplacement(ranges, tnode);
+                    this.ReplacedText.push(swappedElement);
+                    this.TrueMatchList = this.TrueMatchList.concat(swappedElement.matches);
 
-                let swappedElement = new HighlightReplacement(ranges, tnode);
-                this.ReplacedText.push(swappedElement);
-                this.TrueMatchList = this.TrueMatchList.concat(swappedElement.matches);
-
-                swappedElement.Swap();
-            }
+                    swappedElement.Swap();
+                }
+            }, 0);
+            
         }
     }
 
+    /**
+     * Change highlight options.
+     * @param {Object} options 
+     */
     ChangeHighlightColor(options = DefaultHighlightOptions) {
 
         this.Colors = SafeConfigParse(DefaultHighlightOptions, options);
@@ -166,6 +175,7 @@ class Searcher {
             matchedElement.ChangeColor(this.Colors);
         }
     }
+
     /**
      * Function to scroll the matched element into view.
      * @param {number} index 
@@ -177,6 +187,7 @@ class Searcher {
             this.TrueMatchList[index].scrollIntoView();
         }
     }
+
     /**
      * 
      * @returns Number of regex matches.
@@ -184,6 +195,7 @@ class Searcher {
     GetNumMatches() {
         return this.TrueMatchList.length;
     }
+
     /**
      * 
      * @param {number} index The index of the desired match.
@@ -196,6 +208,7 @@ class Searcher {
         this.SetCurrentMatch(index);
         return this.TrueMatchList[index].textContent;
     }
+
     /**
      * Sets a matched string as the "focused match", giving it a distinct highlight color.
      * @param {number} index 
@@ -209,6 +222,7 @@ class Searcher {
         this.CurrentMatch.style.color = this.CurrentMatchColors.color;
         this.CurrentMatch.style.backgroundColor = this.CurrentMatchColors.backgroundColor;
     }
+
     /**
      * Clears the distinct highlight for a focused match.
      * @param {number} index 
@@ -237,10 +251,13 @@ function SearchEventHandler(message) {
     switch(message.command) {
 
         case MessageType.SEARCH:
+
             searchInstance.Revert();
             searchInstance.Search(message.params[0]);
+
             let sentNumMessage = new Message(MessageType.SENT_NUM, null);
             let sentMaxMessage = new Message(MessageType.SENT_MAX, [0]);
+
             if (searchInstance.GetNumMatches() != 0) {
                 sentNumMessage.params = [0, searchInstance.GetMatchInfo(0)];
                 sentMaxMessage.params[0] = searchInstance.GetNumMatches();
@@ -250,19 +267,24 @@ function SearchEventHandler(message) {
             break;
 
         case MessageType.CHANGE_COLOR:
+
             searchInstance.ChangeHighlightColor(SafeConfigParse(DefaultHighlightOptions, message.params[0]));
             break;
 
         case MessageType.CLEAR:
+
             searchInstance.Revert();
             break;
 
         case MessageType.JUMP_TO:
+
             searchInstance.JumpTo(message.params[0]);
             break;
 
         case MessageType.GET_NUM:
+
             let match = searchInstance.GetMatchInfo(message.params[0]);
+
             if (match) {
                 browser.runtime.sendMessage(new Message(MessageType.SENT_NUM, [message.params[0], match]));
                 searchInstance.SetCurrentMatch(message.params[0]);
@@ -270,6 +292,7 @@ function SearchEventHandler(message) {
             break;
 
         case MessageType.CLEAR_CURRENT:
+
             searchInstance.ClearCurrentMatch();
             break;
 
@@ -278,4 +301,3 @@ function SearchEventHandler(message) {
     }
 }
 browser.runtime.onMessage.addListener(SearchEventHandler);
-})();

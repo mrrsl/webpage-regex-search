@@ -89,6 +89,7 @@ export class HighlightReplacement {
             }
         }
     }
+
     /** Swaps the wrapper element with the Text node it originally replaced. This also reassigns all fields to null to avoid potential memory leaks. */
     Unswap() {
 
@@ -96,12 +97,14 @@ export class HighlightReplacement {
         this.wrapper = null;
         this.swap = null;
     }
+
     /** Swaps the Text node with the wrapper it is meant to replace. */
     Swap() {
 
         if (this.swap)
             this.swap.parentElement.replaceChild(this.wrapper, this.swap);
     }
+    
     /** Changes the highlight color scheme. */
     ChangeColor(colorObj = DefaultHighlightOptions) {
 

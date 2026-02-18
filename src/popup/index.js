@@ -1,9 +1,9 @@
 import {
-    Searcher
-} from "../lib/re_search.js";
+    MessageType,
+    Message
+} from "../lib/message_protocol.js";
 
 const searchInput = document.getElementById("search-input");
-const searcherInstance = new Searcher();
 
 /**
  * Input listener for the search bar.
@@ -12,10 +12,13 @@ const searcherInstance = new Searcher();
  */
 function searchInputListener(event) {
     
-    if (event.key === "enter")
+    if (event.key === "Enter")
     {
-        searcherInstance.Search(this.value, true, true);
+        debugger;
+        const payload = new Message(MessageType.SEARCH, event.currentTarget.value);
+        browser.tabs.sendMessage(payload);
+        // Response will be here
     }
 }
 
-searchInput.addEventListener(searchInputListener);
+searchInput.addEventListener('keypress', searchInputListener);

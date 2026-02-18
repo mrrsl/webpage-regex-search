@@ -15,11 +15,13 @@
   "type": "module",
   "main": "copy.js",
   "scripts": {
-    "build": "npx @tailwindcss/cli -i ./src/popup/index-pre.css -o ./src/popup/index.css && zsh ./build.zsh"
+    "build": "zsh ./build.zsh",
+    "preview": "cd build; npx web-ext lint && npx web-ext run --devtools;"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.18",
     "tailwindcss": "^4.1.18",
-    "web-ext": "^9.3.0"
+    "web-ext": "^9.3.0",
+    "webpack": "^5.105.2"
   }
 }

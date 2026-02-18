@@ -7,16 +7,20 @@
         <meta name="description" content="" />
         <link rel="icon" href="favicon.png">
         <link rel="stylesheet" href="index.css">
+
+        <script type="module" defer src="index.js">
+
+        </script>
     </head>
 
     <body>
-        <div id="query-box">
-            <input class="flex-row" type="text" placeholder="Type RegEx" id="search-unput"> 
+        <div id="query-box" class="flex flex-row">
+            <input class="flex-row" type="text" placeholder="Regex" id="search-input"> 
             <div id="thinking-icon"></div>
         </div>
 
         <div id="result-box">
-
+            <span id="result-placeholder"></span>
         </div>
     </body>
 

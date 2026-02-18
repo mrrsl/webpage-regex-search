@@ -1,7 +1,7 @@
 import {
     Message,
     MessageType
-} from './message_protocol.js'
+} from './message_protocol.js';
 
 import {
     DefaultHighlightOptions,
@@ -17,9 +17,6 @@ const DefaultCurrentMatchColor = {
     color: "Blue",
     backgroundColor: "Yellow"
 }
-
-if (window.hasRun) return;
-window.hasRun = true;
 
 /**
  * Retrieve an array containing all {@link Text} within the given element including its children.
@@ -38,8 +35,8 @@ function AggregateTextNodes(parentNode) {
         // push subnodes into the queue
         for (let child of parent.childNodes) {
             // Exclude script elements from the final node list
-            if (node.nodeType == Node.TEXT_NODE  && !TAGNAME_EXCLUDE[node.parentElement.tagName]) {
-                list.push(node);
+            if (child.nodeType == Node.TEXT_NODE  && !TAGNAME_EXCLUDE[child.parentElement.tagName]) {
+                list.push(child);
             }
             else {
                 subqueue.push(child);
@@ -251,7 +248,8 @@ function SearchEventHandler(message) {
     switch(message.command) {
 
         case MessageType.SEARCH:
-
+            console.log("Executing Search");
+            console.log(searchInstance);
             searchInstance.Revert();
             searchInstance.Search(message.params[0]);
 
@@ -300,4 +298,5 @@ function SearchEventHandler(message) {
             break;
     }
 }
+
 browser.runtime.onMessage.addListener(SearchEventHandler);

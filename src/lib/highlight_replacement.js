@@ -72,9 +72,15 @@ export class HighlightReplacement {
      * @param {HTMLElement} textnode 
      * @param {*} colorOptions 
      */
-    constructor(matchRanges = [[0, 0]], textnode = null, colorOptions = DefaultHighlightOptions) {
+    constructor(matchRanges, textnode = null, colorOptions = DefaultHighlightOptions) {
 
-        let text = (textnode)? textnode.data: "";
+        if (!matchRanges)
+            throw new Error("Recieved undefined ranges");
+
+        if (!textnode)
+            throw new Error("Recieved null textnode");
+
+        const text = textnode.data;
 
         /**@type HTMLSpanElement */
         this.wrapper = SeparateString(text, matchRanges, colorOptions.color, colorOptions.backgroundColor);

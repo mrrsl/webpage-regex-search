@@ -39,7 +39,8 @@ function AggregateTextNodes(parentNode) {
                 list.push(child);
             }
             else {
-                subqueue.push(child);
+                if (child.checkVisibility && child.checkVisibility())
+                    subqueue.push(child);
             }
         }
     }
@@ -139,21 +140,21 @@ export class Searcher {
         let searchExpression = new RegExp(searchstr, flags);
         for (let tnode of this.TextNodes) {
             setTimeout(() => {
-                let matches = tnode.data.matchAll(searchExpression);
-                console.log(tnode.data);
+                const matches = tnode.data.matchAll(searchExpression);
+                const nodeRanges = [];
                 // Observed some that some text nodes have a null parentElement/parentNode
-                if (matches.length > 0 && tnode.parentElement) {
-                    console.log(`Matched ${result[0]} to ${searchstr} at [${result.index}, ${result.index + result[0].length}]`);
-                    let ranges = matches.map(
-                        (result) => [result.index, result.index + result[0].length]
-                    );
+                for (const hit of matches) {
+                    nodeRanges.push([hit.index, hit.index + hit[0].length]);
+                }
 
-                    let swappedElement = new HighlightReplacement(ranges, tnode);
+                if (nodeRanges.length > 0)
+                {
+                    let swappedElement = new HighlightReplacement(nodeRanges, tnode);
                     this.ReplacedText.push(swappedElement);
                     this.TrueMatchList = this.TrueMatchList.concat(swappedElement.matches);
-
                     swappedElement.Swap();
                 }
+                
             }, 0);
             
         }

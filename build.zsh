@@ -1,5 +1,12 @@
 #! /usr/bin/zsh
 
+# Notes:
+# The script is a work around for manually inserting tailwind classes into the final popup css files and 'resolve' imports in content scripts. Therefore
+# we need to accomplish the following:
+# - Remove imports from content scripts, imports are kept in original source for intellisense purposes
+# - Change import paths in popup scripts and copy any dependencies into the same directory
+# - Invoke the Tailwind CLI tool to properly transpile any CSS files importing Tailwind classes
+
 working=$(pwd)
 
 buildDir="$working/build"

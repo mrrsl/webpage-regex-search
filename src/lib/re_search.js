@@ -95,6 +95,9 @@ export class Searcher {
         this.Colors = SafeConfigParse(DefaultHighlightOptions, colorOptions);
         this.CurrentMatchColors = SafeConfigParse(DefaultCurrentMatchColor, matchedColorOptions);
         this.CurrentMatch = null;
+
+        /**@type number[] Pending timers during async Search(). */
+        this.pendingTimers = [];
         
     }
     UpdateRoot(newRoot) {
@@ -112,7 +115,11 @@ export class Searcher {
      * Call to restore the original document.
      */
     Revert() {
-        // Make sure we clear every field that might contain a reference to a DOM element
+        // Cancel pending search insertions
+        for (let id of this.pendingTimers) {
+            clearTimeout(id);
+        }
+        this.pendingTimers = [];
         for (let swapped of this.ReplacedText) {
             swapped.Unswap();
         }
@@ -139,7 +146,7 @@ export class Searcher {
 
         let searchExpression = new RegExp(searchstr, flags);
         for (let tnode of this.TextNodes) {
-            setTimeout(() => {
+            const timerId = setTimeout(() => {
                 const matches = tnode.data.matchAll(searchExpression);
                 const nodeRanges = [];
                 // Observed some that some text nodes have a null parentElement/parentNode
@@ -156,6 +163,7 @@ export class Searcher {
                 }
                 
             }, 0);
+            this.pendingTimers.push(timerId);
             
         }
     }

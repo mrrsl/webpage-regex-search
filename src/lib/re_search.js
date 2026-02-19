@@ -85,7 +85,10 @@ export class Searcher {
         /** List of all Text nodes present in the DOM body. */
         this.TextNodes = AggregateTextNodes(root);
 
-        /** List of all {@link HighlightReplacement} created by the last search call. */
+        /** 
+         * List of all {@link HighlightReplacement} created by the last search call.
+         * @type Array<HighlightReplacement>
+         */
         this.ReplacedText = [];
 
         /** List of individual <a> elements that contain matched text.
@@ -142,7 +145,7 @@ export class Searcher {
         if (multiline)
             flags += "m";
         if (caseflag)
-            flags += "i"
+            flags += "i";
 
         let searchExpression = new RegExp(searchstr, flags);
         for (let tnode of this.TextNodes) {

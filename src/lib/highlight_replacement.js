@@ -82,38 +82,42 @@ export class HighlightReplacement {
 
         const text = textnode.data;
 
-        /**@type HTMLSpanElement */
+        /**@type HTMLSpanElement Container for the matched segments */
         this.wrapper = SeparateString(text, matchRanges, colorOptions.color, colorOptions.backgroundColor);
 
-        /**@type Node */
+        /**@type Node Original segment containing the searched string. */
         this.swap = textnode;
-
-        this.matches = [];
-        for (let atag of this.wrapper.children) {
-            if (atag.className == MATCH_CLASS){
-                this.matches.push(atag);
-            }
-        }
     }
 
     /** Swaps the wrapper element with the Text node it originally replaced. This also reassigns all fields to null to avoid potential memory leaks. */
     Unswap() {
-
-        this.wrapper.replaceWith(this.swap);
-        this.wrapper = null;
-        this.swap = null;
+        try {
+            if (this.wrapper && this.wrapper.parentElement) {
+                this.wrapper.replaceWith(this.swap);
+            }
+        } catch (e) {
+            console.warn("HighlightReplacement.Unswap failed:", e);
+        } finally {
+            // drop references to DOM nodes to avoid leaks
+            this.wrapper = null;
+            this.swap = null;
+        }
     }
 
     /** Swaps the Text node with the wrapper it is meant to replace. */
     Swap() {
-
-        if (this.swap)
-            this.swap.parentElement.replaceChild(this.wrapper, this.swap);
+        try {
+            if (this.swap && this.swap.parentElement && this.wrapper) {
+                this.swap.parentElement.replaceChild(this.wrapper, this.swap);
+            }
+        } catch (e) {
+            console.warn("HighlightReplacement.Swap failed:", e);
+        }
     }
     
     /** Changes the highlight color scheme. */
     ChangeColor(colorObj = DefaultHighlightOptions) {
-
+        if (!this.wrapper) return;
         for (let el of this.wrapper.children) {
             if (el.className == MATCH_CLASS) {
                 el.style.color = colorObj.color;

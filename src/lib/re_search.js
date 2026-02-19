@@ -123,8 +123,7 @@ export class Searcher {
      * Carry out a search of all strings within {@link TextNodes} and highlight matched text in the DOM.
      * @param {string} searchstr 
      */
-    Search(searchstr, multiFlag = true, caseFlag = false) {
-        
+    Search(searchstr, caseflag = false, multiline = false) {
         if (this.ReplacedText.length > 1)
             this.Update();
         if (searchstr.length === 0)
@@ -132,19 +131,19 @@ export class Searcher {
 
         let flags = "g";
 
-        if (multiFlag)
+        if (multiline)
             flags += "m";
-        if (caseFlag)
+        if (caseflag)
             flags += "i"
 
         let searchExpression = new RegExp(searchstr, flags);
-
         for (let tnode of this.TextNodes) {
             setTimeout(() => {
-                let matches = [...tnode.data.matchAll(searchExpression)];
+                let matches = tnode.data.matchAll(searchExpression);
+                console.log(tnode.data);
                 // Observed some that some text nodes have a null parentElement/parentNode
                 if (matches.length > 0 && tnode.parentElement) {
-
+                    console.log(`Matched ${result[0]} to ${searchstr} at [${result.index}, ${result.index + result[0].length}]`);
                     let ranges = matches.map(
                         (result) => [result.index, result.index + result[0].length]
                     );
@@ -244,12 +243,10 @@ let searchInstance = new Searcher(document.body);
 function SearchEventHandler(message) {
     if (!message)
         return;
-
+    
     switch(message.command) {
 
         case MessageType.SEARCH:
-            console.log("Executing Search");
-            console.log(searchInstance);
             searchInstance.Revert();
             searchInstance.Search(message.params[0]);
 

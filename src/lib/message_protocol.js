@@ -36,6 +36,11 @@ function InvertEnumKeyValue(obj) {
 }
 
 export class Message {
+    /**
+     * 
+     * @param {number} msgtype Use the {@link MessageType enums}.
+     * @param {Array<any>} params array of parameters.
+     */
     constructor(msgtype, params) {
 
         if (!MessageTypeInverse.hasOwnProperty(msgtype))
